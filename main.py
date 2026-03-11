@@ -1,126 +1,99 @@
-import random
+import customtkinter as tk
+from PIL import Image
 import os
-import sys
-import pygame
 import json
-import math
-from pygame.color import THECOLORS
 
-try:
+if os.path.exists('data.json') and os.path.getsize('data.json') > 0:
     with open("data.json", "r") as f:
         userdata = json.load(f)
-except:
-    print("ЗАПУСТИ main.py\n"*100)
-    sys.exit()
-
-user = userdata["user"]
-if 1 <= userdata["userhp"] <= 150 and 2 <= userdata["userpower"] <=8:
-    HP = userdata["userhp"]
-else:
-    print("Стоп! Мне не приятно")
-    HP = random.randint(1, 150)
-
-pygame.init()
-
-WIDTH, HEIGHT = 640, 480
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("FIGHT!")
-
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 75)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-
-clock = pygame.time.Clock()
-TPS = 2500
-
-START = False
 
 
-
-square_size = 50
-x, y = WIDTH // 2 - square_size // 2, HEIGHT // 2 - square_size // 2
-
-speed = 300
-enemy_speed_lerp = 2
+root = tk.CTk()
+root.title("Simple Game")
+root.geometry("500x500")
 
 
-enemy_x, enemy_y = 0, 0
-enemy_size = 10
+user = ""
+userhp = 0
+userpower = 0
 
-font = pygame.font.SysFont('couriernew', 24)
-nfont = pygame.font.SysFont('couriernew', 16)
+quest_frame = tk.CTkFrame(root)
+quest_frame.pack(pady=10)
 
+button_frame = tk.CTkFrame(root)
+button_frame.pack(pady=10)
 
-pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+answer_frame = tk.CTkFrame(root)
+answer_frame.pack(pady=10)
 
+logoimg = Image.open("upscaled_logo.png")
+logoi = tk.CTkImage(light_image=logoimg, size=(360, 142))
 
+grl = tk.CTkLabel(quest_frame, image=logoi, text="")
+grl.pack(pady=10)
+greet = tk.CTkLabel(quest_frame, text="Привет, укажи свое имя", font=("Arial", 14))
 
-run = True
+name = tk.CTkEntry(answer_frame, placeholder_text="Введите имя...", width=200)
 
-while run:
-    if pygame.mouse.get_just_pressed()[0]:
-        START = True
-        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-    dt = clock.tick(TPS) / 1000.0
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+userhpbar = tk.CTkEntry(answer_frame, placeholder_text="Введите хп...", width=100)
+userpwbar = tk.CTkEntry(answer_frame, placeholder_text="Введите силу...", width=100)
 
-    ks = pygame.key.get_pressed()
-    dx, dy = 0, 0
-    if ks[pygame.K_a]:
-        dx -= 1
-    if ks[pygame.K_d]:
-        dx += 1
-    if ks[pygame.K_w]:
-        dy -= 1
-    if ks[pygame.K_s]:
-        dy += 1
-    if START:
-        x += dx * speed * dt
-        y += dy * speed * dt
-
-        x = max(0, min(x, WIDTH - square_size))
-        y = max(0, min(y, HEIGHT - square_size))
-
-        enemy_x += (x - enemy_x) * (1 - math.exp(-enemy_speed_lerp * dt))
-        enemy_y += (y - enemy_y) * (1 - math.exp(-enemy_speed_lerp * dt))
+def runfight():
+    global userhp, userpower
+    if userhpbar.get().strip().isdigit() and userpwbar.get().strip().isdigit():
+        userhp = int(userhpbar.get().strip())
+        userpower = int(userpwbar.get().strip())
+        if 1 <= userhp <= 150 and 2 <= userpower <= 8:
+            root.destroy()
+            with open("data.json", "w") as f:
+                json.dump({"user": user, "userhp": userhp, "userpower": userpower}, f)
+            os.system("python fight.py")
 
 
+def prefight():
+    greet.configure(
+        text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКоличество ХП врага будут случайно выбраны от\n1 до 150, а силы от 2 до 8.\nСвои же значения ты должен выбрать сам.",
+        text_color="white")
+    userhpbar.pack(side="left")
+    userpwbar.pack(side="right")
+    if os.path.exists('data.json') and os.path.getsize('data.json') > 0:
+        userhpbar.insert(0, userdata["userhp"])
+        userpwbar.insert(0, userdata["userpower"])
+        greet.configure(text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКоличество ХП врага будут случайно выбраны от\n2 до 150, а силы от 2 до 8.\nСвои же значения ты должен выбрать сам.\nТвои прошлые значения были восстановлены",)
 
-    screen.fill(WHITE)
-    if START:
-        player_rect = pygame.Rect(x, y, square_size, square_size)
-        enemy_rect = pygame.Rect(enemy_x, enemy_y, enemy_size, enemy_size)
-        pygame.draw.rect(screen, WHITE, enemy_rect)
-        pygame.draw.rect(screen, GREEN, player_rect)
-        if player_rect.colliderect(enemy_rect):
-            HP -= 15 * dt
-
-    hp_color = BLACK
-    bg_color = GREEN
-    if HP < 1:
-        run = False
-    if not START:
-        text = font.render("ЛКМ ДЛЯ НАЧАЛА", True, THECOLORS['blue'])
-        screen.blit(text, (100, 100))
-    hptext = font.render(str(max(0, round(HP))), True, hp_color, bg_color)
-    ntext = nfont.render(user, True, WHITE, BLACK)
-
-    ntext.set_alpha(128)
-    if START:
-        screen.blit(ntext, (x, y - 20))
-        screen.blit(hptext, (x, y))
-        pygame.mouse.set_pos(enemy_x, enemy_y)
-
-    fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
-    screen.blit(fps_display, (10, 10))
+    ok.configure(text="Готово", command=runfight)
 
 
+def submit_name():
+    global user
+    user = name.get().strip()
+    if not user:
+        return
+    greet.configure(text=f"Привет, {user}!", text_color="green")
+    name.pack_forget()
+    ok.configure(text="Далее", command=prefight)
 
-    pygame.display.flip()
 
-pygame.quit()
+ok = tk.CTkButton(button_frame, text="Готово", command=submit_name)
 
-#IDE ZONE: aadddddddddddddddddddddddddddddwawwwwwwwwwwwwwwwwwwwwwwwwwdawaadd
+
+def nextt():
+    global ok
+    global button_frame
+    button_frame.forget()
+    button_frame = tk.CTkFrame(root)
+    button_frame.pack(pady=10)
+    grl.forget()
+    greet.pack()
+    name.pack()
+    if os.path.exists('data.json') and os.path.getsize('data.json') > 0:
+        name.insert(0, userdata["user"])
+    ok = tk.CTkButton(button_frame, text="Готово", command=submit_name)
+    ok.pack()
+
+
+start = tk.CTkButton(button_frame, text="Начать", command=nextt)
+start.pack(pady=5)
+
+root.mainloop()
+#
