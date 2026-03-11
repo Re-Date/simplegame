@@ -6,15 +6,22 @@ import json
 import math
 from pygame.color import THECOLORS
 
+
+try:
+    print(getattr(pygame, "IS_CE", False))
+except:
+    print("pygame is not CE")
+
+
 try:
     with open("data.json", "r") as f:
         userdata = json.load(f)
 except:
-    print("ЗАПУСТИ main.py\n"*100)
+    print("ЗАПУСТИ main.py\n" * 100)
     sys.exit()
 
 user = userdata["user"]
-if 1 <= userdata["userhp"] <= 150 and 2 <= userdata["userpower"] <=8:
+if 1 <= userdata["userhp"] <= 150 and 2 <= userdata["userpower"] <= 8:
     HP = userdata["userhp"]
 else:
     print("Стоп! Мне не приятно")
@@ -32,11 +39,9 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
 clock = pygame.time.Clock()
-TPS = 2500
+TPS = 240
 
 START = False
-
-
 
 square_size = 50
 x, y = WIDTH // 2 - square_size // 2, HEIGHT // 2 - square_size // 2
@@ -44,22 +49,18 @@ x, y = WIDTH // 2 - square_size // 2, HEIGHT // 2 - square_size // 2
 speed = 300
 enemy_speed_lerp = 2
 
-
 enemy_x, enemy_y = 0, 0
 enemy_size = 10
 
 font = pygame.font.SysFont('couriernew', 24)
 nfont = pygame.font.SysFont('couriernew', 16)
 
-
 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-
-
 
 run = True
 
 while run:
-    if pygame.mouse.get_just_pressed()[0]:
+    if pygame.mouse.get_pressed()[0]:
         START = True
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     dt = clock.tick(TPS) / 1000.0
@@ -86,8 +87,6 @@ while run:
 
         enemy_x += (x - enemy_x) * (1 - math.exp(-enemy_speed_lerp * dt))
         enemy_y += (y - enemy_y) * (1 - math.exp(-enemy_speed_lerp * dt))
-
-
 
     screen.fill(WHITE)
     if START:
@@ -117,10 +116,6 @@ while run:
     fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
     screen.blit(fps_display, (10, 10))
 
-
-
     pygame.display.flip()
 
 pygame.quit()
-
-#IDE ZONE: aadddddddddddddddddddddddddddddwawwwwwwwwwwwwwwwwwwwwwwwwwdawaadd
