@@ -1,1 +1,2 @@
-# simplegame
+# just a simple game
+nothing more...
