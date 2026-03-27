@@ -6,12 +6,12 @@ import json
 import math
 from pygame.color import THECOLORS
 
+points = 0
 
 try:
     print(getattr(pygame, "IS_CE", False))
 except:
     print("pygame is not CE")
-
 
 try:
     with open("data.json", "r") as f:
@@ -32,6 +32,11 @@ pygame.init()
 WIDTH, HEIGHT = 640, 480
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("FIGHT!")
+
+btn_w, btn_h = 150, 50
+button_rect = pygame.Rect(10*int(userdata["userpower"]), 10*int(userdata["userpower"]), 10*int(userdata["userpower"]), 10*int(userdata["userpower"]))
+color_idle = (70, 70, 70)
+color_hover = (100, 100, 100)
 
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 75)
@@ -60,11 +65,19 @@ pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 run = True
 
 while run:
+    mouse_pos = pygame.mouse.get_pos()
+    is_hovered = button_rect.collidepoint(mouse_pos)
     if pygame.mouse.get_pressed()[0]:
         START = True
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
     dt = clock.tick(TPS) / 1000.0
     for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if is_hovered and START:
+                new_x = random.randint(0, WIDTH - btn_w)
+                new_y = random.randint(0, HEIGHT - btn_h)
+                button_rect.topleft = (new_x, new_y)
+                points += 1
         if event.type == pygame.QUIT:
             run = False
 
@@ -85,14 +98,16 @@ while run:
         x = max(0, min(x, WIDTH - square_size))
         y = max(0, min(y, HEIGHT - square_size))
 
-        enemy_x += (x - enemy_x) * (1 - math.exp(-enemy_speed_lerp * dt))
-        enemy_y += (y - enemy_y) * (1 - math.exp(-enemy_speed_lerp * dt))
+        enemy_x += (x + 25 - enemy_x) * (1 - math.exp(-enemy_speed_lerp * dt))
+        enemy_y += (y + 25 - enemy_y) * (1 - math.exp(-enemy_speed_lerp * dt))
 
     screen.fill(WHITE)
     if START:
+
         player_rect = pygame.Rect(x, y, square_size, square_size)
         enemy_rect = pygame.Rect(enemy_x, enemy_y, enemy_size, enemy_size)
         pygame.draw.rect(screen, WHITE, enemy_rect)
+        pygame.draw.rect(screen, color_hover if is_hovered else color_idle, button_rect, border_radius=10)
         pygame.draw.rect(screen, GREEN, player_rect)
         if player_rect.colliderect(enemy_rect):
             HP -= 15 * dt
@@ -115,6 +130,8 @@ while run:
 
     fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
     screen.blit(fps_display, (10, 10))
+    p_display = nfont.render(f"Очки: {points}", True, BLACK)
+    screen.blit(p_display, (10, 25))
 
     pygame.display.flip()
 

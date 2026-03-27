@@ -36,7 +36,7 @@ greet = tk.CTkLabel(quest_frame, text="Привет, укажи свое имя"
 name = tk.CTkEntry(answer_frame, placeholder_text="Введите имя...", width=200)
 
 userhpbar = tk.CTkEntry(answer_frame, placeholder_text="Введите хп...", width=100)
-userpwbar = tk.CTkEntry(answer_frame, placeholder_text="Введите силу...", width=100)
+userpwbar = tk.CTkEntry(answer_frame, placeholder_text="Введите хитбоксы кнопки...", width=100)
 
 def runfight():
     global userhp, userpower
@@ -52,14 +52,14 @@ def runfight():
 
 def prefight():
     greet.configure(
-        text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКоличество ХП врага будут случайно выбраны от\n1 до 150, а силы от 2 до 8.\nСвои же значения ты должен выбрать сам.",
+        text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКурсор мыши - твой враг\nВыбери хп 2 до 150, а Hitbox Multiplier от 2 до 8.",
         text_color="white")
     userhpbar.pack(side="left")
     userpwbar.pack(side="right")
     if os.path.exists('data.json') and os.path.getsize('data.json') > 0:
         userhpbar.insert(0, userdata["userhp"])
         userpwbar.insert(0, userdata["userpower"])
-        greet.configure(text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКоличество ХП врага будут случайно выбраны от\n2 до 150, а силы от 2 до 8.\nСвои же значения ты должен выбрать сам.\nТвои прошлые значения были восстановлены",)
+        greet.configure(text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКурсор мыши - твой враг\nВыбери хп 2 до 150, а Hitbox Multiplier от 2 до 8.\nТвои прошлые значения были восстановлены",)
 
     ok.configure(text="Готово", command=runfight)
 
