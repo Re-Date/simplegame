@@ -8,10 +8,8 @@ from pygame.color import THECOLORS
 
 points = 0
 
-try:
-    print(getattr(pygame, "IS_CE", False))
-except:
-    print("pygame is not CE")
+if getattr(pygame, "IS_CE", False) == False:
+    print("Поставь Pygame Community Edition (pip install pygame-ce)\n"*10)
 
 try:
     with open("data.json", "r") as f:
@@ -26,15 +24,17 @@ if 1 <= userdata["userhp"] <= 150 and 2 <= userdata["userpower"] <= 8:
 else:
     print("Стоп! Мне не приятно")
     HP = random.randint(1, 150)
+    userdata["userpower"] = random.randint(2, 8)
 
 pygame.init()
 
-WIDTH, HEIGHT = 640, 480
+WIDTH, HEIGHT = 1280, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("FIGHT!")
 
 btn_w, btn_h = 150, 50
 button_rect = pygame.Rect(10*int(userdata["userpower"]), 10*int(userdata["userpower"]), 10*int(userdata["userpower"]), 10*int(userdata["userpower"]))
+button_rect.center = (WIDTH//2, HEIGHT//2)
 color_idle = (70, 70, 70)
 color_hover = (100, 100, 100)
 
@@ -60,7 +60,6 @@ enemy_size = 10
 font = pygame.font.SysFont('couriernew', 24)
 nfont = pygame.font.SysFont('couriernew', 16)
 
-pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
 
 run = True
 
@@ -103,7 +102,6 @@ while run:
 
     screen.fill(WHITE)
     if START:
-
         player_rect = pygame.Rect(x, y, square_size, square_size)
         enemy_rect = pygame.Rect(enemy_x, enemy_y, enemy_size, enemy_size)
         pygame.draw.rect(screen, WHITE, enemy_rect)
@@ -132,6 +130,8 @@ while run:
     screen.blit(fps_display, (10, 10))
     p_display = nfont.render(f"Очки: {points}", True, BLACK)
     screen.blit(p_display, (10, 25))
+
+    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND if is_hovered else pygame.SYSTEM_CURSOR_ARROW)
 
     pygame.display.flip()
 
