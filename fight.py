@@ -8,7 +8,7 @@ from pygame.color import THECOLORS
 
 points = 0
 
-if getattr(pygame, "IS_CE", False) == False:
+if not getattr(pygame, "IS_CE", False):
     print("Поставь Pygame Community Edition (pip install pygame-ce)\n"*10)
 
 try:
@@ -43,6 +43,9 @@ GREEN = (0, 255, 75)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 
+clicksound = pygame.mixer.Sound("assets/click.wav")
+
+
 clock = pygame.time.Clock()
 TPS = 240
 
@@ -57,19 +60,24 @@ enemy_speed_lerp = 2
 enemy_x, enemy_y = 0, 0
 enemy_size = 10
 
-font = pygame.font.SysFont('couriernew', 24)
+font = pygame.font.SysFont('couriernew', 20)
 nfont = pygame.font.SysFont('couriernew', 16)
 
+hp_color = BLACK
+bg_color = GREEN
 
 run = True
 
 while run:
     mouse_pos = pygame.mouse.get_pos()
     is_hovered = button_rect.collidepoint(mouse_pos)
+
     if pygame.mouse.get_pressed()[0]:
         START = True
         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
     dt = clock.tick(TPS) / 1000.0
+
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if is_hovered and START:
@@ -77,6 +85,7 @@ while run:
                 new_y = random.randint(0, HEIGHT - btn_h)
                 button_rect.topleft = (new_x, new_y)
                 points += 1
+                clicksound.play()
         if event.type == pygame.QUIT:
             run = False
 
@@ -90,7 +99,19 @@ while run:
         dy -= 1
     if ks[pygame.K_s]:
         dy += 1
-    if START:
+
+    screen.fill(WHITE)
+
+    if not START:
+        text = font.render("ЛКМ ДЛЯ НАЧАЛА", True, THECOLORS['blue'])
+        screen.blit(text, (100, 100))
+        pygame.display.flip()
+    else:
+        hptext = font.render(str(max(0, round(HP))), True, hp_color)
+
+        fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
+        p_display = nfont.render(f"Очки: {points}", True, BLACK)
+
         x += dx * speed * dt
         y += dy * speed * dt
 
@@ -100,39 +121,34 @@ while run:
         enemy_x += (x + 25 - enemy_x) * (1 - math.exp(-enemy_speed_lerp * dt))
         enemy_y += (y + 25 - enemy_y) * (1 - math.exp(-enemy_speed_lerp * dt))
 
-    screen.fill(WHITE)
-    if START:
+        pygame.mouse.set_pos(enemy_x, enemy_y)
+
         player_rect = pygame.Rect(x, y, square_size, square_size)
         enemy_rect = pygame.Rect(enemy_x, enemy_y, enemy_size, enemy_size)
+
         pygame.draw.rect(screen, WHITE, enemy_rect)
         pygame.draw.rect(screen, color_hover if is_hovered else color_idle, button_rect, border_radius=10)
         pygame.draw.rect(screen, GREEN, player_rect)
+
+        ntext = nfont.render(user, True, WHITE, BLACK)
+        ntext.set_alpha(128)
+        screen.blit(ntext, (x, y - 20))
+
         if player_rect.colliderect(enemy_rect):
             HP -= 15 * dt
 
-    hp_color = BLACK
-    bg_color = GREEN
-    if HP < 1:
-        run = False
-    if not START:
-        text = font.render("ЛКМ ДЛЯ НАЧАЛА", True, THECOLORS['blue'])
-        screen.blit(text, (100, 100))
-    hptext = font.render(str(max(0, round(HP))), True, hp_color, bg_color)
-    ntext = nfont.render(user, True, WHITE, BLACK)
+        pygame.draw.rect(screen, RED, (10, 680, 200, 20))
+        pygame.draw.rect(screen, GREEN, (10, 680, max(0, HP / int(userdata["userhp"]) * 200), 20))
+        screen.blit(hptext, (10, 680))
 
-    ntext.set_alpha(128)
-    if START:
-        screen.blit(ntext, (x, y - 20))
-        screen.blit(hptext, (x, y))
-        pygame.mouse.set_pos(enemy_x, enemy_y)
+        if HP < 1:
+            run = False
 
-    fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
-    screen.blit(fps_display, (10, 10))
-    p_display = nfont.render(f"Очки: {points}", True, BLACK)
-    screen.blit(p_display, (10, 25))
+        screen.blit(fps_display, (10, 10))
+        screen.blit(p_display, (10, 25))
 
-    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND if is_hovered else pygame.SYSTEM_CURSOR_ARROW)
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND if is_hovered else pygame.SYSTEM_CURSOR_ARROW)
 
-    pygame.display.flip()
+        pygame.display.flip()
 
 pygame.quit()

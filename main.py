@@ -26,7 +26,7 @@ button_frame.pack(pady=10)
 answer_frame = tk.CTkFrame(root)
 answer_frame.pack(pady=10)
 
-logoimg = Image.open("upscaled_logo.png")
+logoimg = Image.open("assets/upscaled_logo.png")
 logoi = tk.CTkImage(light_image=logoimg, size=(360, 142))
 
 grl = tk.CTkLabel(quest_frame, image=logoi, text="")
