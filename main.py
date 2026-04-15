@@ -52,7 +52,7 @@ def runfight():
 
 def prefight():
     greet.configure(
-        text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКурсор мыши - твой враг\nВыбери хп 2 до 150, а Hitbox Multiplier от 2 до 8.",
+        text=f"Итак, {user}, пора приготовиться к бою с врагом.\nКурсор мыши - твой враг\nВыбери хп от 1 до 150, а Hitbox Multiplier от 2 до 8.",
         text_color="white")
     userhpbar.pack(side="left")
     userpwbar.pack(side="right")

@@ -45,6 +45,7 @@ RED = (255, 0, 0)
 
 clicksound = pygame.mixer.Sound("assets/click.wav")
 
+nclp = False
 
 clock = pygame.time.Clock()
 TPS = 240
@@ -68,6 +69,7 @@ bg_color = GREEN
 
 run = True
 
+
 while run:
     mouse_pos = pygame.mouse.get_pos()
     is_hovered = button_rect.collidepoint(mouse_pos)
@@ -81,8 +83,9 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if is_hovered and START:
-                new_x = random.randint(0, WIDTH - btn_w)
-                new_y = random.randint(0, HEIGHT - btn_h)
+                new_x = random.randint(0, WIDTH-20 - btn_w)
+                new_y = random.randint(0, HEIGHT-20 - btn_h)
+                print(new_x, new_y)
                 button_rect.topleft = (new_x, new_y)
                 points += 1
                 clicksound.play()
@@ -99,11 +102,15 @@ while run:
         dy -= 1
     if ks[pygame.K_s]:
         dy += 1
+    if ks[pygame.K_ESCAPE]:
+        START = False
+    if ks[pygame.K_n] and ks[pygame.K_c] and ks[pygame.K_l] and ks[pygame.K_p]:
+        nclp = True
 
     screen.fill(WHITE)
 
     if not START:
-        text = font.render("ЛКМ ДЛЯ НАЧАЛА", True, THECOLORS['blue'])
+        text = font.render("Кликай по кнопке (ЛКМ), \nуклоняйся от курсора-врага (WASD), \nне дай HP упасть до 0. Hitbox 2–8 влияет на размер цели. ЛКМ ДЛЯ НАЧАЛА", True, THECOLORS['blue'])
         screen.blit(text, (100, 100))
         pygame.display.flip()
     else:
@@ -134,7 +141,7 @@ while run:
         ntext.set_alpha(128)
         screen.blit(ntext, (x, y - 20))
 
-        if player_rect.colliderect(enemy_rect):
+        if player_rect.colliderect(enemy_rect) and not nclp:
             HP -= 15 * dt
 
         pygame.draw.rect(screen, RED, (10, 680, 200, 20))
@@ -152,3 +159,4 @@ while run:
         pygame.display.flip()
 
 pygame.quit()
+#
