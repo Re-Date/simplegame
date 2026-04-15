@@ -12,7 +12,7 @@ if not getattr(pygame, "IS_CE", False):
     print("Поставь Pygame Community Edition (pip install pygame-ce)\n"*10)
 
 try:
-    with open("data.json", "r") as f:
+    with open("assets/data.json", "r") as f:
         userdata = json.load(f)
 except:
     print("ЗАПУСТИ main.py\n" * 100)
