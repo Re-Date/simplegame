@@ -5,6 +5,14 @@ import pygame
 import json
 import math
 from pygame.color import THECOLORS
+import socket
+import pickle
+
+# Подключение к серверу
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('192.168.4.45', 5555)) # типа тут айпи
+my_id = pickle.loads(client.recv(2048))
+all_players = {}
 
 points = 0
 
@@ -12,7 +20,7 @@ if not getattr(pygame, "IS_CE", False):
     print("Поставь Pygame Community Edition (pip install pygame-ce)\n"*10)
 
 try:
-    with open("assets/data.json", "r") as f:
+    with open("data/data.json", "r") as f:
         userdata = json.load(f)
 except:
     print("ЗАПУСТИ main.py\n" * 100)
@@ -114,6 +122,34 @@ while run:
         screen.blit(text, (100, 100))
         pygame.display.flip()
     else:
+        # 1. Отправляем свои данные на сервер
+        try:
+            client.send(pickle.dumps({
+                "x": x, "y": y,
+                "points": points,
+                "user": user,
+                "hp": HP,
+                "ex": enemy_x, "ey": enemy_y
+            }))
+            # 2. Получаем данные обо всех игроках
+            all_players = pickle.loads(client.recv(4096))
+        except:
+            print("Потеряно соединение с сервером")
+
+        # 3. Отрисовка других игроков
+        for p_id, p_data in all_players.items():
+            if p_id != my_id:
+                # Рисуем чужой квадрат (синий для отличия)
+                other_rect = pygame.Rect(p_data["x"], p_data["y"], square_size, square_size)
+                pygame.draw.rect(screen, (0, 100, 255), other_rect)
+
+                other_e = pygame.Rect(p_data["ex"], p_data["ey"], enemy_size, enemy_size)
+                pygame.draw.rect(screen, (0, 0, 0), other_e)
+
+                # Имя чужого игрока
+                other_name = nfont.render(p_data["user"], True, BLACK)
+                screen.blit(other_name, (p_data["x"], p_data["y"] - 20))
+
         hptext = font.render(str(max(0, round(HP))), True, hp_color)
 
         fps_display = nfont.render(f"FPS: {int(clock.get_fps())}", True, BLACK)
